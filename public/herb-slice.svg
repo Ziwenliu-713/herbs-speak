@@ -1,0 +1,36 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="g1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(56 44) rotate(55) scale(120)">
+      <stop stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#f2ede2" stop-opacity="1"/>
+    </radialGradient>
+    <linearGradient id="g2" x1="26" y1="18" x2="140" y2="152" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7f9b6f"/>
+      <stop offset="0.55" stop-color="#c7a677"/>
+      <stop offset="1" stop-color="#b58a5a"/>
+    </linearGradient>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#2c3024" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- A warm, minimal "herb slice" medallion -->
+  <g filter="url(#s)">
+    <path d="M80 12C46.1 12 18.5 39.6 18.5 73.5C18.5 111.7 44.7 140.3 80 148C115.3 140.3 141.5 111.7 141.5 73.5C141.5 39.6 113.9 12 80 12Z"
+      fill="url(#g1)" stroke="#d7c9af" stroke-width="3"/>
+    <path d="M80 28C52.6 28 30.5 50.1 30.5 77.5C30.5 107.3 52.1 129.8 80 135C107.9 129.8 129.5 107.3 129.5 77.5C129.5 50.1 107.4 28 80 28Z"
+      fill="none" stroke="url(#g2)" stroke-width="4" opacity="0.9"/>
+
+    <!-- leaf veins -->
+    <path d="M46 92C64 76 90 66 114 62" stroke="#698b59" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+    <path d="M52 110C68 90 88 78 110 74" stroke="#b58a5a" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+    <path d="M54 70C70 62 88 56 106 54" stroke="#698b59" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- central "root slice" -->
+    <path d="M80 44C60 54 48 74 50 93C52 112 66 122 80 124C94 122 108 112 110 93C112 74 100 54 80 44Z"
+      fill="#f6f4ee" stroke="#d7c9af" stroke-width="3"/>
+    <path d="M80 52C68 60 61 74 62 88C63 102 71 110 80 112C89 110 97 102 98 88C99 74 92 60 80 52Z"
+      fill="none" stroke="#b58a5a" stroke-opacity="0.65" stroke-width="2"/>
+  </g>
+</svg>
+
