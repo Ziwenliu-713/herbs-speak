@@ -58,19 +58,24 @@ export function PageOne() {
 
           <div className="basicsVideoBlock">
             <div className="basicsVideoGrid" role="list">
-              {tcmIntroVideos.map((v) => (
-                <div key={v.videoId} className="basicsVideoCard" role="listitem">
-                  <div className="basicsVideoEmbed">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${v.videoId}`}
-                      title={pickText(v.title, lang)}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+              {tcmIntroVideos.map((v) => {
+                const embedSrc = v.bvid
+                  ? `https://player.bilibili.com/player.html?bvid=${v.bvid}&high_quality=1`
+                  : `https://www.youtube.com/embed/${v.videoId}`;
+                return (
+                  <div key={v.videoId} className="basicsVideoCard" role="listitem">
+                    <div className="basicsVideoEmbed">
+                      <iframe
+                        src={embedSrc}
+                        title={pickText(v.title, lang)}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <p className="basicsVideoTitle">{pickText(v.title, lang)}</p>
                   </div>
-                  <p className="basicsVideoTitle">{pickText(v.title, lang)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

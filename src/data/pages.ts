@@ -1,8 +1,9 @@
 import { MediaItem } from '../components/Media/types';
 import { TranslatedText } from '../i18n/strings';
 
+/* 使用国内可访问的示例视频（西瓜/字节 CDN） */
 const sampleVideo =
-  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+  'https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/mp4/xgplayer-demo-360p.mp4';
 
 export const pageMedia: Record<
   'page1' | 'page2' | 'page3' | 'page4' | 'page5',
