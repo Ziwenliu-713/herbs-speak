@@ -16,26 +16,24 @@
 
 *{ box-sizing: border-box; }
 html,body{ height: 100%; }
+#root{ color: inherit; }
 body{
   margin: 0;
-  /* 以具有书法/楷书气质的中文字体为主，其他为兜底 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 优先使用常见中文字体，确保文字可见 */
   font-family:
+    "Microsoft YaHei",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "SimSun",
     "STKaiti",
     "KaiTi",
-    "KaiTi_GB2312",
-    "FZSongKeBenXiuKaiS-R-GB",
-    "Noto Naskh Arabic",
-    "Noto Sans Arabic",
-    "Noto Serif",
-    "Noto Sans",
     "Noto Serif SC",
-    "Songti SC",
-    "SimSun",
+    "Noto Sans SC",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
-    "Microsoft YaHei",
-    "Source Han Sans SC",
     sans-serif;
   background:
     radial-gradient(900px 600px at 10% 0%, rgba(139, 181, 133, 0.20), transparent 60%),
