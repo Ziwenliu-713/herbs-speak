@@ -20,5 +20,8 @@ export const auth: Record<string, TranslatedText> = {
   errorInvalidCredentials: { zh: '邮箱或密码错误', en: 'Invalid email or password', fr: 'Email ou mot de passe incorrect', ru: 'Неверный email или пароль', es: 'Email o contraseña incorrectos', ar: 'بريد أو كلمة مرور غير صحيحة' },
   errorInvalidCode: { zh: '验证码错误', en: 'Invalid verification code', fr: 'Code invalide', ru: 'Неверный код', es: 'Código inválido', ar: 'رمز غير صحيح' },
   errorEmailExists: { zh: '该邮箱已注册', en: 'Email already registered', fr: 'Email déjà utilisé', ru: 'Email уже зарегистрирован', es: 'Email ya registrado', ar: 'البريد مسجل مسبقاً' },
-  demoHint: { zh: '（演示：验证码填 123456）', en: '(Demo: code is 123456)', fr: '(Démo: code 123456)', ru: '(Демо: код 123456)', es: '(Demo: código 123456)', ar: '(العرض: 123456)' }
+  demoHint: { zh: '（演示：验证码填 123456）', en: '(Demo: code is 123456)', fr: '(Démo: code 123456)', ru: '(Демо: код 123456)', es: '(Demo: código 123456)', ar: '(العرض: 123456)' },
+  guestBrowse: { zh: '游客浏览', en: 'Browse as guest', fr: 'Visiter sans compte', ru: 'Гость', es: 'Ver como invitado', ar: 'تصفح كزائر' },
+  registerToUnlock: { zh: '注册账号享受平台全部功能', en: 'Register to enjoy full platform features', fr: 'Inscrivez-vous pour débloquer toutes les fonctionnalités', ru: 'Зарегистрируйтесь для доступа ко всем функциям', es: 'Regístrate para disfrutar de todas las funciones', ar: 'سجّل للاستمتاع بجميع الميزات' },
+  registerNow: { zh: '立即注册', en: 'Register now', fr: 'S\'inscrire', ru: 'Регистрация', es: 'Regístrate', ar: 'سجّل الآن' }
 };

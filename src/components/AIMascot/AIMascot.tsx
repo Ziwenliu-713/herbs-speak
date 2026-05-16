@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { AIChatPanel } from '../AIChat/AIChatPanel';
 import type { Language } from '../../i18n/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRegisterPrompt } from '../../contexts/RegisterPromptContext';
 import { pickText, ui } from '../../i18n/strings';
 
 /** 吉祥物图片地址：生成完成后将路径写在这里，或通过 props 传入 */
@@ -13,12 +15,18 @@ interface AIMascotProps {
 }
 
 export function AIMascot({ lang, mascotSrc = DEFAULT_MASCOT_SRC }: AIMascotProps) {
+  const { isLoggedIn } = useAuth();
+  const showRegisterPrompt = useRegisterPrompt();
   const [isOrbiting, setIsOrbiting] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [imgError, setImgError] = useState(false);
   const showPlaceholder = !mascotSrc || imgError;
 
   const handleClick = () => {
+    if (!isLoggedIn) {
+      showRegisterPrompt();
+      return;
+    }
     setShowChat(true);
     if (!isOrbiting) {
       setIsOrbiting(true);

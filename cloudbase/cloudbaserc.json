@@ -1,0 +1,5 @@
+{
+  "envId": "YOUR_ENV_ID",
+  "version": "2.0",
+  "functionRoot": "./functions"
+}

@@ -1,18 +1,16 @@
 import { MediaItem } from './types';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { pickText, ui } from '../../i18n/strings';
+import { GuestRestricted } from '../Auth/GuestRestricted';
 
 export function MediaCard({ item }: { item: MediaItem }) {
   const { lang } = useLanguage();
   const title = pickText(item.title, lang);
   const description = item.description ? pickText(item.description, lang) : undefined;
-  return (
-    <article className="card" aria-label={title}>
-      <div className="cardMedia">
-        {item.kind === 'image' ? (
-          <img className="mediaImage" src={item.src} alt={title} loading="lazy" />
-        ) : (
-          <video
+  const mediaContent = item.kind === 'image' ? (
+    <img className="mediaImage" src={item.src} alt={title} loading="lazy" />
+  ) : (
+    <video
             className="mediaVideo"
             src={item.src}
             poster={item.poster}
@@ -20,6 +18,14 @@ export function MediaCard({ item }: { item: MediaItem }) {
             playsInline
             preload="metadata"
           />
+  );
+  return (
+    <article className="card" aria-label={title}>
+      <div className="cardMedia">
+        {item.kind === 'video' ? (
+          <GuestRestricted>{mediaContent}</GuestRestricted>
+        ) : (
+          mediaContent
         )}
       </div>
 

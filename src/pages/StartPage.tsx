@@ -53,6 +53,14 @@ export function StartPage() {
           <button type="button" className="startHint startHintLink" onClick={() => setShowRegister(true)}>
             {pickText(auth.notRegistered, lang)}
           </button>
+          <button
+            type="button"
+            className="startHint startHintLink"
+            style={{ marginTop: 8 }}
+            onClick={() => navigate('/app')}
+          >
+            {pickText(auth.guestBrowse, lang)}
+          </button>
         </div>
       </div>
       <LanguageFab />

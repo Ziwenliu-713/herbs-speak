@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Language } from '../../i18n/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRegisterPrompt } from '../../contexts/RegisterPromptContext';
 import { pickText, ui } from '../../i18n/strings';
 
 const STORAGE_CASES = 'zhixing-cases';
@@ -102,6 +104,8 @@ interface ZhixingCommunityProps {
 }
 
 export function ZhixingCommunity({ lang }: ZhixingCommunityProps) {
+  const { isLoggedIn } = useAuth();
+  const showRegisterPrompt = useRegisterPrompt();
   const [tab, setTab] = useState<Tab>('cases');
   const [cases, setCases] = useState<CasePost[]>([]);
   const [checkins, setCheckins] = useState<Set<string>>(new Set());
@@ -146,6 +150,7 @@ export function ZhixingCommunity({ lang }: ZhixingCommunityProps) {
   }, []);
 
   const addCase = () => {
+    if (!isLoggedIn) { showRegisterPrompt(); return; }
     const t = newCaseTitle.trim();
     const c = newCaseContent.trim();
     if (!t || !c) return;
@@ -170,12 +175,14 @@ export function ZhixingCommunity({ lang }: ZhixingCommunityProps) {
   })();
 
   const toggleCheckin = (dateStr: string) => {
+    if (!isLoggedIn) { showRegisterPrompt(); return; }
     if (dateStr !== todayStr) return;
     if (checkins.has(dateStr)) return;
     persistCheckins(new Set([...checkins, dateStr]));
   };
 
   const addTopicPost = () => {
+    if (!isLoggedIn) { showRegisterPrompt(); return; }
     const t = newTopicTitle.trim();
     const c = newTopicContent.trim();
     if (!t || !c) return;
@@ -195,12 +202,14 @@ export function ZhixingCommunity({ lang }: ZhixingCommunityProps) {
   };
 
   const upvoteTopic = (id: string) => {
+    if (!isLoggedIn) { showRegisterPrompt(); return; }
     persistTopics(
       topics.map((p) => (p.id === id ? { ...p, upvotes: p.upvotes + 1 } : p))
     );
   };
 
   const addCocreate = () => {
+    if (!isLoggedIn) { showRegisterPrompt(); return; }
     const t = newCocreateTitle.trim();
     const c = newCocreateContent.trim();
     if (!t || !c) return;

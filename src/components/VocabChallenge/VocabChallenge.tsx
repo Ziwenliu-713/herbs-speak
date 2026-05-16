@@ -84,7 +84,9 @@ export function VocabChallenge({ lang }: VocabChallengeProps) {
   const [wrongRecords, setWrongRecords] = useState<WrongRecord[]>([]);
 
   useEffect(() => {
-    fetch('/corpus/graded_vocab.csv')
+    const scriptBase = new URL('..', import.meta.url).href;
+    const corpusUrl = new URL('corpus/graded_vocab.csv', scriptBase).href;
+    fetch(corpusUrl)
       .then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed'))))
       .then((text) => {
         const rows = parseGradedVocabCSV(text);

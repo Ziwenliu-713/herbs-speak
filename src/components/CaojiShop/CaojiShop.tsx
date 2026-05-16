@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Language } from '../../i18n/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRegisterPrompt } from '../../contexts/RegisterPromptContext';
 import type { TranslatedText } from '../../i18n/strings';
 import { pickText, ui } from '../../i18n/strings';
 import { shopProducts } from '../../data/shopProducts';
@@ -25,6 +27,8 @@ interface CaojiShopProps {
 }
 
 export function CaojiShop({ lang }: CaojiShopProps) {
+  const { isLoggedIn } = useAuth();
+  const showRegisterPrompt = useRegisterPrompt();
   const [cart, setCart] = useState<Record<string, number>>(loadCart);
   const [showCart, setShowCart] = useState(false);
 
@@ -33,8 +37,12 @@ export function CaojiShop({ lang }: CaojiShopProps) {
   }, [cart]);
 
   const addToCart = useCallback((id: string) => {
+    if (!isLoggedIn) {
+      showRegisterPrompt();
+      return;
+    }
     setCart((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
-  }, []);
+  }, [isLoggedIn, showRegisterPrompt]);
 
   const removeFromCart = useCallback((id: string) => {
     setCart((prev) => {
@@ -56,7 +64,7 @@ export function CaojiShop({ lang }: CaojiShopProps) {
         <button
           type="button"
           className="caojiCartBtn"
-          onClick={() => setShowCart(!showCart)}
+          onClick={() => { if (!isLoggedIn) showRegisterPrompt(); else setShowCart(!showCart); }}
           aria-expanded={showCart}
         >
           🛒 {pickText(ui.caojiShop.cart, lang)} {cartCount > 0 && <span className="caojiCartBadge">{cartCount}</span>}

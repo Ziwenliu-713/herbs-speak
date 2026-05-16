@@ -10,6 +10,7 @@ import { tcmIntroVideos } from '../data/tcmIntroVideos';
 import { useLanguage } from '../i18n/LanguageContext';
 import { pickText, ui } from '../i18n/strings';
 import { PageShell } from './PageShell';
+import { GuestRestricted } from '../components/Auth/GuestRestricted';
 
 export function PageOne() {
   const data = pageMedia.page1;
@@ -56,19 +57,21 @@ export function PageOne() {
             {pickText(ui.basicsSection.title, lang)}
           </h2>
 
+          <GuestRestricted>
           <div className="basicsVideoBlock">
             <div className="basicsVideoGrid" role="list">
               {tcmIntroVideos.map((v) => {
-                const embedSrc = v.bvid
-                  ? `https://player.bilibili.com/player.html?bvid=${v.bvid}&high_quality=1`
-                  : `https://www.youtube.com/embed/${v.videoId}`;
+                const useBilibili = lang === 'zh' && v.bvid;
+                const embedSrc = useBilibili
+                  ? `https://player.bilibili.com/player.html?bvid=${v.bvid}&high_quality=1&autoplay=0`
+                  : `https://www.youtube.com/embed/${v.videoId}?autoplay=0`;
                 return (
                   <div key={v.videoId} className="basicsVideoCard" role="listitem">
                     <div className="basicsVideoEmbed">
                       <iframe
                         src={embedSrc}
                         title={pickText(v.title, lang)}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                       />
                     </div>
@@ -78,6 +81,7 @@ export function PageOne() {
               })}
             </div>
           </div>
+          </GuestRestricted>
 
           <div className="basicsGrid">
             {data.basicsItems.map((item) =>

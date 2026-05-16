@@ -1,0 +1,158 @@
+{
+  "envId": "YOUR_ENV_ID",
+  "version": "2.0",
+  "functionRoot": "./functions"
+}
+const cloud = require('wx-server-sdk');
+const crypto = require('crypto');
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
+const db = cloud.database();
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+exports.main = async (event) => {
+  const { email, password } = event || {};
+  const trimmed = String(email || '').trim().toLowerCase();
+  const pwd = String(password || '');
+  if (!trimmed || !pwd) {
+    return { ok: false, error: 'email_or_password_invalid' };
+  }
+  const res = await db.collection('users')
+    .where({ email: trimmed })
+    .limit(1)
+    .get();
+  const doc = res.data && res.data[0];
+  if (!doc) {
+    return { ok: false, error: 'email_or_password_invalid' };
+  }
+  const passwordHash = hashPassword(pwd);
+  if (doc.passwordHash !== passwordHash) {
+    return { ok: false, error: 'email_or_password_invalid' };
+  }
+  const { passwordHash: _, _id, ...user } = doc;
+  const safe = {
+    email: user.email,
+    nickname: user.nickname || user.email.split('@')[0],
+    avatar: user.avatar || null,
+    createdAt: user.createdAt
+  };
+  return { ok: true, user: safe };
+};
+{
+  "name": "authLogin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
+const cloud = require('wx-server-sdk');
+const crypto = require('crypto');
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
+const db = cloud.database();
+const _ = db.command;
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+exports.main = async (event) => {
+  const { email, password, verificationCode } = event || {};
+  const trimmed = String(email || '').trim().toLowerCase();
+  const code = String(verificationCode || '').trim();
+  const pwd = String(password || '');
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    return { ok: false, error: 'invalid_email' };
+  }
+  if (pwd.length < 6) {
+    return { ok: false, error: 'password_too_short' };
+  }
+  if (!code) {
+    return { ok: false, error: 'invalid_verification_code' };
+  }
+  const now = Date.now();
+  const codesRes = await db.collection('verification_codes')
+    .where({ email: trimmed })
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .get();
+  const rec = codesRes.data && codesRes.data[0];
+  if (!rec || rec.code !== code || rec.expiresAt < now) {
+    return { ok: false, error: 'invalid_verification_code' };
+  }
+  const usersRes = await db.collection('users').where({ email: trimmed }).count();
+  if (usersRes.total > 0) {
+    return { ok: false, error: 'email_already_registered' };
+  }
+  const user = {
+    email: trimmed,
+    passwordHash: hashPassword(pwd),
+    nickname: trimmed.split('@')[0],
+    avatar: null,
+    createdAt: now
+  };
+  await db.collection('users').add({
+    data: user
+  });
+  const { passwordHash, ...safe } = user;
+  return { ok: true, user: safe };
+};
+{
+  "name": "authRegister",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
+const cloud = require('wx-server-sdk');
+const nodemailer = require('nodemailer');
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
+const db = cloud.database();
+const CODE_EXPIRY = 5 * 60 * 1000;
+function genCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+exports.main = async (event) => {
+  const { email } = event || {};
+  const trimmed = String(email || '').trim().toLowerCase();
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    return { ok: false, error: 'invalid_email' };
+  }
+  const code = genCode();
+  await db.collection('verification_codes').add({
+    data: {
+      email: trimmed,
+      code,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + CODE_EXPIRY
+    }
+  });
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpUser && smtpPass) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.qq.com',
+      port: parseInt(process.env.SMTP_PORT || '465', 10),
+      secure: true,
+      auth: { user: smtpUser, pass: smtpPass }
+    });
+    await transporter.sendMail({
+      from: `"herbs speak" <${smtpUser}>`,
+      to: trimmed,
+      subject: 'herbs speak 注册验证码',
+      text: `您的验证码是：${code}，5分钟内有效。`,
+      html: `<p>您的验证码是：<strong>${code}</strong></p><p>5分钟内有效。</p>`
+    });
+  } else {
+    console.warn('SMTP not configured, code:', code);
+  }
+  return { ok: true };
+};
+{
+  "name": "sendVerificationCode",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "nodemailer": "^6.9.16"
+  }
+}

@@ -6,11 +6,16 @@ import { PageOne } from './pages/PageOne';
 import { PageThree } from './pages/PageThree';
 import { PageTwo } from './pages/PageTwo';
 import { StartPage } from './pages/StartPage';
+import { GuardianQuizPage } from './pages/guardian/GuardianQuizPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <StartPage />
+  },
+  {
+    path: '/guardian',
+    element: <GuardianQuizPage />
   },
   {
     path: '/app',

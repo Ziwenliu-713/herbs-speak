@@ -18,10 +18,14 @@ export function LoginModal(props: LoginModalProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const res = login(email, password);
+    setLoading(true);
+    const res = await login(email, password);
+    setLoading(false);
     if (res.ok) onSuccess();
     else setError(pickText(auth.errorInvalidCredentials, lang));
   };
@@ -41,7 +45,9 @@ export function LoginModal(props: LoginModalProps) {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
           </label>
           {error && <p className="authError">{error}</p>}
-          <button type="submit" className="authSubmit">{pickText(auth.submitLogin, lang)}</button>
+          <button type="submit" className="authSubmit" disabled={loading}>
+            {loading ? (lang === 'zh' ? '登录中...' : 'Logging in...') : pickText(auth.submitLogin, lang)}
+          </button>
         </form>
         <p className="authSwitch">
           {lang === 'zh' ? '还未注册？' : 'Not registered? '}

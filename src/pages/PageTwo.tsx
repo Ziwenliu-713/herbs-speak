@@ -32,7 +32,10 @@ export function PageTwo() {
   }, []);
 
   useEffect(() => {
-    fetch('/corpus/graded_vocab.csv')
+    // 从当前脚本所在目录（一般为 assets/）向上一级得到应用根，再拼语料路径
+    const scriptBase = new URL('..', import.meta.url).href;
+    const corpusUrl = new URL('corpus/graded_vocab.csv', scriptBase).href;
+    fetch(corpusUrl)
       .then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed to load'))))
       .then((text) => {
         const rows = parseGradedVocabCSV(text);
@@ -109,7 +112,9 @@ export function PageTwo() {
 
         {loadError && (
           <p className="gradedCorpusError">
-            {lang === 'zh' ? '语料文件加载失败，请确保 public/corpus/graded_vocab.csv 存在。' : 'Corpus file could not be loaded.'}
+            {lang === 'zh'
+              ? '语料文件加载失败。请先执行 npm run build，在 dist 中确认有 corpus/graded_vocab.csv，上传到 CloudBase 时务必包含整个 dist 内容（含 corpus 文件夹）。'
+              : 'Corpus file could not be loaded. Run npm run build, ensure dist/corpus/graded_vocab.csv exists, and upload the full dist (including corpus folder) to CloudBase.'}
           </p>
         )}
 

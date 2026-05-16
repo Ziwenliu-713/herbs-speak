@@ -1,20 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import * as authApi from '../api/authApi';
 
 const AUTH_STORAGE = 'auth-user';
-const USERS_STORAGE = 'auth-users-registry';
-
-export interface User {
-  email: string;
-  nickname: string;
-  avatar: string | null;
-  createdAt: number;
-}
+export type User = authApi.User;
 
 interface AuthContextValue {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string) => { ok: boolean; error?: string };
-  register: (email: string, password: string, verificationCode: string) => { ok: boolean; error?: string };
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  register: (email: string, password: string, verificationCode: string) => Promise<{ ok: boolean; error?: string }>;
+  sendVerificationCode: (email: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   updateProfile: (data: Partial<Pick<User, 'nickname' | 'avatar'>>) => void;
 }
@@ -33,19 +28,6 @@ function saveUser(u: User | null) {
   else localStorage.removeItem(AUTH_STORAGE);
 }
 
-function loadUsers(): Record<string, { password: string; user: User }> {
-  try {
-    const raw = localStorage.getItem(USERS_STORAGE);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveUsers(users: Record<string, { password: string; user: User }>) {
-  localStorage.setItem(USERS_STORAGE, JSON.stringify(users));
-}
-
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -55,35 +37,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveUser(user);
   }, [user]);
 
-  const login = useCallback((email: string, password: string) => {
-    const users = loadUsers();
-    const key = email.trim().toLowerCase();
-    const record = users[key];
-    if (!record || record.password !== password) {
-      return { ok: false as const, error: 'email_or_password_invalid' };
-    }
-    setUser(record.user);
-    return { ok: true as const };
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await authApi.login(email, password);
+    if (res.ok && res.user) setUser(res.user);
+    return { ok: res.ok, error: res.error };
   }, []);
 
-  const register = useCallback((email: string, password: string, verificationCode: string) => {
-    if (verificationCode.trim() !== '123456') {
-      return { ok: false as const, error: 'invalid_verification_code' };
-    }
-    const key = email.trim().toLowerCase();
-    const users = loadUsers();
-    if (users[key]) return { ok: false as const, error: 'email_already_registered' };
-    const newUser: User = {
-      email: key,
-      nickname: key.split('@')[0],
-      avatar: null,
-      createdAt: Date.now()
-    };
-    users[key] = { password, user: newUser };
-    saveUsers(users);
-    setUser(newUser);
-    return { ok: true as const };
+  const register = useCallback(async (email: string, password: string, verificationCode: string) => {
+    const res = await authApi.register(email, password, verificationCode);
+    if (res.ok && res.user) setUser(res.user);
+    return { ok: res.ok, error: res.error };
   }, []);
+
+  const sendVerificationCode = useCallback((email: string) => authApi.sendVerificationCode(email), []);
 
   const logout = useCallback(() => setUser(null), []);
 
@@ -96,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoggedIn: !!user,
     login,
     register,
+    sendVerificationCode,
     logout,
     updateProfile
   };
