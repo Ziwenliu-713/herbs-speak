@@ -1,0 +1,266 @@
+import { useMemo, useState } from 'react';
+import {
+  BEAST_ORDER,
+  BEASTS,
+  QUIZ_LENGTH,
+  computeGuardianResult,
+  createQuizSession,
+  type DisplayQuestion,
+  type GuardianResult,
+  type QuizSession
+} from '../data/guardianQuiz';
+import './guardianQuiz.css';
+
+type Step = 'home' | 'quiz' | 'result';
+
+export function GuardianQuizPage() {
+  const [step, setStep] = useState<Step>('home');
+  const [session, setSession] = useState<QuizSession | null>(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [finalResult, setFinalResult] = useState<GuardianResult | null>(null);
+
+  const questions = session?.questions ?? [];
+  const total = questions.length;
+  const current: DisplayQuestion | undefined = questions[questionIndex];
+  const progress = step === 'quiz' && total > 0 ? ((questionIndex + (selectedOptionId ? 1 : 0)) / total) * 100 : 0;
+
+  const resultProfile = useMemo(() => {
+    if (!finalResult) return null;
+    return BEASTS[finalResult.primary];
+  }, [finalResult]);
+
+  function startQuiz() {
+    const nextSession = createQuizSession();
+    setSession(nextSession);
+    setStep('quiz');
+    setQuestionIndex(0);
+    setAnswers([]);
+    setSelectedOptionId(null);
+    setFinalResult(null);
+  }
+
+  function pickOption(optionId: string) {
+    setSelectedOptionId(optionId);
+  }
+
+  function goNext() {
+    if (!selectedOptionId || !current || !session) return;
+    const nextAnswers = [...answers, selectedOptionId];
+    setAnswers(nextAnswers);
+    setSelectedOptionId(null);
+
+    if (questionIndex + 1 >= total) {
+      setFinalResult(computeGuardianResult(session, nextAnswers));
+      setStep('result');
+      return;
+    }
+    setQuestionIndex((i) => i + 1);
+  }
+
+  function goBack() {
+    if (questionIndex === 0) {
+      setStep('home');
+      setSession(null);
+      setAnswers([]);
+      setSelectedOptionId(null);
+      return;
+    }
+    const prevIndex = questionIndex - 1;
+    setQuestionIndex(prevIndex);
+    setSelectedOptionId(answers[prevIndex] ?? null);
+    setAnswers((a) => a.slice(0, -1));
+  }
+
+  function retake() {
+    startQuiz();
+  }
+
+  if (step === 'home') {
+    return (
+      <div className="guardian-page">
+        <div className="guardian-card">
+          <p className="guardian-eyebrow">???????</p>
+          <h1 className="guardian-title">??????????</h1>
+          <p className="guardian-subtitle">
+            Find Your Chinese Mythical Guardian
+            <br />
+            <span style={{ fontSize: '0.9em', opacity: 0.85 }}>
+              ? 2 ?? ? {QUIZ_LENGTH} ??????? ???? ? ?????????
+            </span>
+          </p>
+
+          <div className="guardian-beasts-row guardian-beasts-row--muted" aria-hidden>
+            {BEAST_ORDER.map((id) => (
+              <div key={id} className="guardian-beast-silhouette guardian-beast-silhouette--unknown">
+                ?
+              </div>
+            ))}
+          </div>
+
+          <button type="button" className="guardian-btn guardian-btn-primary" onClick={startQuiz}>
+            ???? / Start Test
+          </button>
+        </div>
+
+        <p className="guardian-footer-note">
+          ???????? ? ???????
+          <br />
+          Adopt Your Mythical Guardian: A One-Day Journey through Chinese Life
+        </p>
+      </div>
+    );
+  }
+
+  if (step === 'quiz' && current) {
+    return (
+      <div className="guardian-page">
+        <div className="guardian-card">
+          <div className="guardian-progress" aria-hidden>
+            <div className="guardian-progress-fill" style={{ width: `${progress}%` }} />
+          </div>
+
+          <p className="guardian-question-num">
+            ? {questionIndex + 1} / {total} ? ? Question {questionIndex + 1} of {total}
+          </p>
+          <h2 className="guardian-question-zh">{current.zh}</h2>
+          <p className="guardian-question-en">{current.en}</p>
+
+          <div className="guardian-options" role="listbox" aria-label={current.zh}>
+            {current.options.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                role="option"
+                aria-selected={selectedOptionId === opt.id}
+                className={`guardian-option${selectedOptionId === opt.id ? ' selected' : ''}`}
+                onClick={() => pickOption(opt.id)}
+              >
+                <span className="guardian-option-key">{opt.displayIndex}</span>
+                <span className="guardian-option-text">
+                  <span className="guardian-option-zh">{opt.zh}</span>
+                  <span className="guardian-option-en">{opt.en}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="guardian-nav">
+            <button type="button" className="guardian-btn guardian-btn-secondary" onClick={goBack}>
+              {questionIndex === 0 ? '????' : '???'}
+            </button>
+            <button
+              type="button"
+              className="guardian-btn guardian-btn-primary"
+              disabled={!selectedOptionId}
+              onClick={goNext}
+              style={{
+                opacity: selectedOptionId ? 1 : 0.5,
+                cursor: selectedOptionId ? 'pointer' : 'not-allowed'
+              }}
+            >
+              {questionIndex + 1 >= total ? '????' : '???'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'result' && finalResult && resultProfile) {
+    const secondaryProfile = finalResult.secondary ? BEASTS[finalResult.secondary] : null;
+
+    return (
+      <div className="guardian-page">
+        <div className="guardian-card guardian-card--result">
+          <p className="guardian-eyebrow">?????? ? Your Guardian Profile</p>
+
+          <div
+            className="guardian-result-badge"
+            style={{
+              background: `linear-gradient(145deg, ${resultProfile.color}, ${resultProfile.color}99)`
+            }}
+          >
+            {resultProfile.glyph}
+          </div>
+
+          <h1 className="guardian-result-name">{resultProfile.nameZh}</h1>
+          <p className="guardian-result-name-en">{resultProfile.nameEn}</p>
+
+          {secondaryProfile && (
+            <p className="guardian-secondary-beast">
+              ???? ? Secondary: {secondaryProfile.nameZh} {secondaryProfile.nameEn}
+            </p>
+          )}
+
+          <span className="guardian-keywords">
+            {resultProfile.keywordsZh} ? {resultProfile.keywordsEn}
+          </span>
+
+          <div className="guardian-blend-box">
+            <p>{finalResult.summaryZh}</p>
+            <p style={{ color: '#6b7f76', marginTop: 10 }}>{finalResult.summaryEn}</p>
+            <p style={{ marginTop: 14, fontWeight: 600 }}>{finalResult.blendZh}</p>
+            <p style={{ color: '#6b7f76', marginTop: 6 }}>{finalResult.blendEn}</p>
+          </div>
+
+          <div className="guardian-score-chart">
+            <p className="guardian-score-chart-title">?????? ? Guardian Affinities</p>
+            {BEAST_ORDER.map((id) => {
+              const b = BEASTS[id];
+              const pct = finalResult.percentages[id];
+              const isPrimary = id === finalResult.primary;
+              const isSecondary = id === finalResult.secondary;
+              return (
+                <div key={id} className="guardian-score-row">
+                  <span className="guardian-score-label">
+                    {b.glyph} {b.nameZh}
+                    {isPrimary && <em> ?</em>}
+                    {isSecondary && <em> ?</em>}
+                  </span>
+                  <div className="guardian-score-bar-wrap">
+                    <div
+                      className="guardian-score-bar"
+                      style={{
+                        width: `${pct}%`,
+                        background: isPrimary ? b.color : `${b.color}99`
+                      }}
+                    />
+                  </div>
+                  <span className="guardian-score-pct">{pct}%</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="guardian-explain">
+            <p>{resultProfile.explanationZh}</p>
+            <p style={{ color: '#6b7f76' }}>{resultProfile.explanationEn}</p>
+          </div>
+
+          <div className="guardian-sentence-box">
+            <p className="guardian-sentence-zh">{resultProfile.sentenceZh}</p>
+            <p className="guardian-sentence-en">{resultProfile.sentenceEn}</p>
+          </div>
+
+          <div className="guardian-offline-tip">
+            <strong>?????? / Continue at the booth</strong>
+            <br />
+            ????????????????????????????????????????
+            <br />
+            <br />
+            Show this result at the adoption desk to collect your guardian sticker, certificate, and
+            passport.
+          </div>
+
+          <button type="button" className="guardian-btn guardian-btn-primary" onClick={retake} style={{ marginTop: 20 }}>
+            ?????????????/ Retake Quiz
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
